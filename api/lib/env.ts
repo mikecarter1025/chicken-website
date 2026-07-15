@@ -1,5 +1,9 @@
 import "dotenv/config";
 
+function getEnv(name: string): string {
+  return process.env[name] ?? "";
+}
+
 function required(name: string): string {
   const value = process.env[name];
   if (!value && process.env.NODE_ENV === "production") {
@@ -9,8 +13,8 @@ function required(name: string): string {
 }
 
 export const env = {
-  appId: required("APP_ID"),
-  appSecret: required("APP_SECRET"),
+  appId: getEnv("APP_ID"),
+  appSecret: getEnv("APP_SECRET"),
   isProduction: process.env.NODE_ENV === "production",
   databaseUrl: required("DATABASE_URL"),
 };
