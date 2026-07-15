@@ -75,7 +75,7 @@
     "@hono/node-server": "^1.14.3",
     "superjson": "^2.2.6",
     "drizzle-orm": "^0.45.1",
-    "mysql2": "^3.14.1"
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
