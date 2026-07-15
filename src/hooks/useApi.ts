@@ -198,7 +198,7 @@ export function useAdminAuth() {
   const login = useCallback((email: string, password: string) => {
     if (adminState.loginAttempts >= 3) return false;
     loginMutation.mutate({ email, password });
-    return true; // async, will update state on success
+    return true;
   }, [loginMutation, adminState.loginAttempts]);
 
   const logout = useCallback(() => {
@@ -213,11 +213,18 @@ export function useAdminAuth() {
     localStorage.setItem('witc_admin', JSON.stringify(newState));
   }, [adminState]);
 
+  // Password change (from inside dashboard)
+  const changePasswordMutation = trpc.admin.changePassword.useMutation({});
+  const changePassword = useCallback((currentPassword: string, newPassword: string) => {
+    changePasswordMutation.mutate({ currentPassword, newPassword });
+  }, [changePasswordMutation]);
+
   return {
     adminState,
     login,
     logout,
     resetAttempts,
+    changePassword,
     isLockedOut: adminState.loginAttempts >= 3,
     remainingAttempts: Math.max(0, 3 - adminState.loginAttempts),
   };

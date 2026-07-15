@@ -569,13 +569,59 @@ function RemovalPage({ settings }: { settings: { removalFee: number; whatsappNum
   );
 }
 
+/* ─── Change Password Form ─── */
+function ChangePasswordForm({ changePassword }: { changePassword?: (current: string, newPass: string) => unknown }) {
+  const [current, setCurrent] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [msg, setMsg] = useState('');
+  const [isError, setIsError] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); setMsg(''); setIsError(false);
+    if (!current || !newPass || !confirm) { setMsg('Fill in all fields'); setIsError(true); return; }
+    if (newPass !== confirm) { setMsg('New passwords do not match'); setIsError(true); return; }
+    if (newPass.length < 6) { setMsg('Password must be at least 6 characters'); setIsError(true); return; }
+    if (changePassword) {
+      changePassword(current, newPass);
+      setMsg('Password changed successfully!'); setIsError(false);
+      setCurrent(''); setNewPass(''); setConfirm('');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">Current Password</label>
+        <input type="password" value={current} onChange={e => setCurrent(e.target.value)}
+          className="w-full bg-black/50 border border-blue-900/50 rounded-lg px-4 py-2 text-white text-sm focus:border-blue-500 outline-none" placeholder="Enter current password" />
+      </div>
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">New Password</label>
+        <input type="password" value={newPass} onChange={e => setNewPass(e.target.value)}
+          className="w-full bg-black/50 border border-blue-900/50 rounded-lg px-4 py-2 text-white text-sm focus:border-blue-500 outline-none" placeholder="Min 6 characters" />
+      </div>
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">Confirm New Password</label>
+        <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
+          className="w-full bg-black/50 border border-blue-900/50 rounded-lg px-4 py-2 text-white text-sm focus:border-blue-500 outline-none" placeholder="Repeat new password" />
+      </div>
+      {msg && <div className={`rounded-lg p-3 text-sm ${isError ? 'bg-red-900/30 border border-red-600/50 text-red-400' : 'bg-green-900/30 border border-green-600/50 text-green-400'}`}>{msg}</div>}
+      <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+        Update Password
+      </button>
+    </form>
+  );
+}
+
 /* ─── Admin Dashboard ─── */
-function AdminDashboard({ 
+function AdminDashboard({
   adminState, login, logout, isLockedOut, remainingAttempts,
   activeChallenges, confirmedChallenges, shameEntries,
   addChallenge, updateChallenge, deleteChallenge, deleteChallengesBulk, moveToConfirmed,
   addShameEntry, updateShameEntry, deleteShameEntry, deleteShameEntriesBulk, markAsPaid,
   settings, updateSettings,
+  changePassword,
 }: {
   adminState: { isLoggedIn: boolean; email: string };
   login: (email: string, password: string) => boolean;
@@ -597,7 +643,10 @@ function AdminDashboard({
   markAsPaid: (id: number) => void;
   settings: { defaultResponseHours: number; admissionFee: number; removalFee: number; whatsappNumber: string };
   updateSettings: (u: Partial<typeof settings>) => void;
+  changePassword?: (current: string, newPass: string) => unknown;
 }) {
+  const pwdChange = changePassword;
+
   const [email, setEmail] = useState('ali.jasser@aol.com');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -883,10 +932,18 @@ function AdminDashboard({
                 </div>
               ))}
             </div>
+            {/* Change Password Section */}
+            <div className="mt-6 bg-white/5 border border-blue-900/50 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <Shield size={18} className="text-blue-400" /> Change Password
+              </h3>
+              <ChangePasswordForm changePassword={pwdChange} />
+            </div>
+
             <div className="mt-6 bg-red-900/20 border border-red-900/50 rounded-lg p-4">
               <p className="text-red-400 font-bold text-sm mb-2">Admin Credentials</p>
               <p className="text-gray-400 text-sm">Email: ali.jasser@aol.com</p>
-              <p className="text-gray-400 text-sm">Password: ChickenAdmin2024!</p>
+              <p className="text-gray-400 text-sm">Password: (hidden for security)</p>
               <p className="text-gray-600 text-sm mt-2">Access: yoursite.com/#admin or Ctrl+Shift+A</p>
             </div>
           </div>
@@ -993,7 +1050,7 @@ function App() {
     addShameEntry, updateShameEntry, deleteShameEntry, deleteShameEntriesBulk, markAsPaid,
   } = useShame();
   const { settings, updateSettings } = useSettings();
-  const { adminState, login, logout, isLockedOut, remainingAttempts } = useAdminAuth();
+  const { adminState, login, logout, isLockedOut, remainingAttempts, changePassword } = useAdminAuth();
 
   useEffect(() => {
     const handler = () => { if (window.location.hash === '#admin') setPage('admin'); };
@@ -1015,6 +1072,7 @@ function App() {
           addChallenge={addChallenge} updateChallenge={updateChallenge} deleteChallenge={deleteChallenge} deleteChallengesBulk={deleteChallengesBulk} moveToConfirmed={moveToConfirmed}
           addShameEntry={addShameEntry} updateShameEntry={updateShameEntry} deleteShameEntry={deleteShameEntry} deleteShameEntriesBulk={deleteShameEntriesBulk} markAsPaid={markAsPaid}
           settings={settings} updateSettings={updateSettings}
+          changePassword={changePassword}
         />
       );
       default: return <HomePage setPage={setPage} settings={settings} />;

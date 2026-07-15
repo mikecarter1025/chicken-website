@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createRouter, publicQuery } from "../middleware";
 
 const ADMIN_EMAIL = "ali.jasser@aol.com";
-const ADMIN_PASSWORD = "ChickenAdmin2024!";
+let adminPassword = "JSHM&R1@.g$Q3DZe";
 
 // Simple in-memory rate limiting (resets on server restart)
 const attempts: Record<string, number> = {};
@@ -21,7 +21,7 @@ export const adminRouter = createRouter({
         return { success: false, error: "Account locked. Too many failed attempts.", remaining: 0 };
       }
 
-      if (input.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && input.password === ADMIN_PASSWORD) {
+      if (input.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && input.password === adminPassword) {
         attempts[key] = 0;
         return { success: true, email: ADMIN_EMAIL, remaining: 3 };
       } else {
@@ -31,8 +31,16 @@ export const adminRouter = createRouter({
       }
     }),
 
-  check: publicQuery.query(async () => {
-    // This is a placeholder - actual auth state is managed client-side
-    return { isLoggedIn: false };
-  }),
+  changePassword: publicQuery
+    .input(z.object({
+      currentPassword: z.string(),
+      newPassword: z.string().min(6),
+    }))
+    .mutation(async ({ input }) => {
+      if (input.currentPassword !== adminPassword) {
+        return { success: false, error: "Current password is incorrect" };
+      }
+      adminPassword = input.newPassword;
+      return { success: true };
+    }),
 });
