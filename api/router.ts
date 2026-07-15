@@ -1,14 +1,14 @@
-import { authRouter } from "./auth-router";
-import { challengeRouter } from "./challengeRouter";
-import { paymentRouter } from "./paymentRouter";
-import { adminRouter } from "./adminRouter";
 import { createRouter, publicQuery } from "./middleware";
+import { challengesRouter } from "./routers/challenges";
+import { shameRouter } from "./routers/shame";
+import { settingsRouter } from "./routers/settings";
+import { adminRouter } from "./routers/admin";
 
 export const appRouter = createRouter({
   ping: publicQuery.query(() => ({ ok: true, ts: Date.now() })),
-  auth: authRouter,
-  challenge: challengeRouter,
-  payment: paymentRouter,
+  challenges: challengesRouter,
+  shame: shameRouter,
+  settings: settingsRouter,
   admin: adminRouter,
 });
 
